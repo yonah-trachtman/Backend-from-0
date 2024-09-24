@@ -15,5 +15,5 @@ export class User {
     status!: 'pending' | 'active' | 'blocked';
 
     @Column({ nullable: true })
-    groupId?: number;
+    groupId?: number | null; 
 }

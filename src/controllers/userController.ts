@@ -13,21 +13,21 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const filterUsersByName = async (req: Request, res: Response) => {
     const { name } = req.query;
-    const users = await getRepository(User).find({ where: { name } });
+    const users = await getRepository(User).find({ where: { name: String(name) } });
     res.json(users);
 };
 
 export const filterUsersByEmail = async (req: Request, res: Response) => {
     const { email } = req.query;
-    const users = await getRepository(User).find({ where: { email } });
+    const users = await getRepository(User).find({ where: { email: String(email) } });
     res.json(users);
 };
 
 export const updateUserStatuses = async (req: Request, res: Response) => {
-    const updates = req.body; // Expecting an array of { id, status }
+    const updates: { id: string, status: 'pending' | 'active' | 'blocked' }[] = req.body;
     const userRepo = getRepository(User);
     const promises = updates.map(async ({ id, status }) => {
-        return userRepo.update(id, { status });
+        return userRepo.update(Number(id), { status });
     });
     await Promise.all(promises);
     res.status(204).send();
@@ -36,17 +36,16 @@ export const updateUserStatuses = async (req: Request, res: Response) => {
 export const removeUserFromGroup = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const userRepo = getRepository(User);
-    const user = await userRepo.findOne(userId);
+    const user = await userRepo.findOne({ where: { id: Number(userId) } });
 
     if (!user) return res.status(404).send('User not found');
 
     user.groupId = null;
     await userRepo.save(user);
 
-    // Check if the group is empty
-    const usersInGroup = await userRepo.find({ where: { groupId: user.groupId } });
+    const usersInGroup = await userRepo.find({ where: { groupId: user.groupId ?? undefined } });
     if (usersInGroup.length === 0) {
-        // Update group status to empty (implement group logic separately)
+        // Group logic
     }
 
     res.status(204).send();

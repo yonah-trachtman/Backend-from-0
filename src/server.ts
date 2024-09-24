@@ -3,6 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { connectDatabase } from './database';
 import userRoutes from './routes/userRoutes';
+import 'reflect-metadata';
 
 const app = express();
 const PORT = 3000;
