@@ -1,11 +1,12 @@
-import { createConnection } from 'typeorm';
-import { User } from './models/user';
+import { DataSource } from 'typeorm';
+import { User } from './entities/user';
+import { Group } from './entities/group';
 
-export const connectDatabase = async () => {
-    return await createConnection({
-        type: 'sqlite',
-        database: 'database.sqlite',
-        synchronize: true,
-        entities: [User],
-    });
-};
+const AppDataSource = new DataSource({
+    type: 'sqlite',
+    database: process.env.DATABASE,
+    synchronize: true,
+    entities: [User, Group],
+});
+
+export default AppDataSource;

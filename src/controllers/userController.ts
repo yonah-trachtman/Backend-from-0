@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
-import { User } from '../models/user';
+import { User } from '../entities/user';
+import { Group } from '../entities/group'; 
 
 export const getAllUsers = async (req: Request, res: Response) => {
     const { limit = 10, offset = 0 } = req.query;
@@ -45,8 +46,23 @@ export const removeUserFromGroup = async (req: Request, res: Response) => {
 
     const usersInGroup = await userRepo.find({ where: { groupId: user.groupId ?? undefined } });
     if (usersInGroup.length === 0) {
-        // Group logic
+        await updateGroupStatusToInactive(user.groupId);
+        await deleteGroupIfEmpty(user.groupId);
     }
 
     res.status(204).send();
 };
+
+async function updateGroupStatusToInactive(groupId: number | null) {
+    if (groupId) {
+        const groupRepo = getRepository(Group);
+        await groupRepo.update(groupId, { status: 'inactive' });
+    }
+}
+
+async function deleteGroupIfEmpty(groupId: number | null) {
+    if (groupId) {
+        const groupRepo = getRepository(Group);
+        await groupRepo.delete(groupId);
+    }
+}
